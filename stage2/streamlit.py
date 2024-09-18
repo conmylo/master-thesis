@@ -29,7 +29,7 @@ def extract_features(prompt):
     ]
 
 # Streamlit application layout
-st.title("Continuous Authentication with One-Class SVM")
+st.title("Continuous and Implicit Authentication with One-Class SVM")
 
 # User inputs
 username = st.text_input("Enter your username:")
