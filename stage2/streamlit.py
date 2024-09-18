@@ -1,6 +1,3 @@
-import nltk
-nltk.download('punkt')
-
 import streamlit as st
 from sklearn.svm import OneClassSVM
 import numpy as np
