@@ -1,0 +1,47 @@
+user_id,raw_text,lexical_diversity,function_word_ratio,punctuation_usage,pronoun_usage,vocabulary_richness
+user_1,"This is a sample text for user one.",0.78,0.20,0.08,0.14,0.84
+user_1,"Another example sentence from user one.",0.80,0.19,0.09,0.16,0.85
+user_1,"User one's writing style involves varied sentences.",0.82,0.17,0.07,0.12,0.86
+user_1,"User one tends to write shorter prompts than others.",0.76,0.21,0.06,0.15,0.81
+user_1,"Text from user one showing use of function words.",0.79,0.22,0.08,0.13,0.83
+user_1,"Here we have another sample from user one.",0.75,0.23,0.05,0.14,0.82
+user_1,"Writing a longer sentence to showcase user one's style.",0.77,0.18,0.09,0.13,0.85
+user_1,"This is user one's stylistic writing for the test.",0.81,0.20,0.07,0.16,0.88
+user_1,"User one adds punctuation frequently in sentences.",0.80,0.19,0.08,0.12,0.86
+user_1,"Punctuation and function word usage by user one.",0.78,0.21,0.06,0.14,0.84
+user_1,"User one prefers short and direct sentences.",0.82,0.18,0.07,0.15,0.87
+user_1,"Another brief example of user one’s text.",0.77,0.20,0.08,0.14,0.83
+user_1,"Text from user one with punctuation marks.",0.79,0.19,0.06,0.13,0.85
+user_1,"User one continues to write in short form.",0.80,0.22,0.05,0.12,0.82
+user_1,"Final entry of text from user one.",0.74,0.21,0.08,0.15,0.81
+user_2,"Sample text from user two’s writing style.",0.83,0.16,0.05,0.12,0.88
+user_2,"User two writes sentences with a formal tone.",0.80,0.18,0.07,0.13,0.85
+user_2,"Formal style and less use of pronouns by user two.",0.81,0.17,0.06,0.10,0.87
+user_2,"User two’s prompts are often longer and formal.",0.79,0.15,0.07,0.11,0.84
+user_2,"Another formal sentence from user two.",0.80,0.16,0.06,0.13,0.86
+user_2,"Punctuation use by user two is infrequent.",0.82,0.15,0.05,0.11,0.87
+user_2,"This is a longer text entry from user two.",0.79,0.17,0.07,0.12,0.86
+user_2,"Text by user two focusing on formal style.",0.81,0.16,0.06,0.13,0.88
+user_2,"Sample sentence structure from user two.",0.82,0.15,0.05,0.12,0.87
+user_2,"Writing with formal style and less pronoun use.",0.83,0.17,0.07,0.10,0.89
+user_2,"User two demonstrates writing style variation.",0.80,0.16,0.06,0.12,0.86
+user_2,"This sentence shows user two’s writing habits.",0.81,0.15,0.05,0.11,0.85
+user_2,"More formal entries from user two.",0.83,0.16,0.06,0.12,0.87
+user_2,"User two tends to use more formal sentence structures.",0.79,0.17,0.07,0.13,0.85
+user_2,"User two writes formally and with fewer pronouns.",0.82,0.15,0.05,0.10,0.88
+user_3,"User three’s style involves creative sentences.",0.85,0.14,0.04,0.16,0.90
+user_3,"User three frequently uses varied vocabulary.",0.87,0.13,0.03,0.17,0.91
+user_3,"Writing style of user three is creative and diverse.",0.86,0.12,0.02,0.18,0.92
+user_3,"User three writes with creativity and variety.",0.84,0.15,0.04,0.16,0.89
+user_3,"Another creative sentence from user three.",0.88,0.13,0.03,0.17,0.91
+user_3,"User three’s style includes unique vocabulary.",0.85,0.14,0.04,0.16,0.90
+user_3,"Frequent use of varied words by user three.",0.89,0.12,0.03,0.18,0.93
+user_3,"Text showing user three’s creativity and word usage.",0.87,0.13,0.04,0.17,0.92
+user_3,"Creative sentences from user three’s writing.",0.86,0.14,0.02,0.16,0.91
+user_3,"Another example of user three’s creative writing.",0.88,0.12,0.03,0.17,0.90
+user_3,"User three tends to write in a creative manner.",0.85,0.13,0.04,0.16,0.89
+user_3,"Creative and diverse text entries from user three.",0.87,0.14,0.02,0.18,0.92
+user_3,"User three’s text tends to use unique vocabulary.",0.86,0.13,0.03,0.17,0.91
+user_3,"Frequent varied vocabulary by user three.",0.89,0.12,0.04,0.18,0.92
+user_3,"User three’s writing style is creative and unique.",0.87,0.14,0.03,0.16,0.93
+user_3,"Another creative text example from user three.",0.86,0.13,0.04,0.17,0.90
