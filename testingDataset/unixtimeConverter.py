@@ -2,7 +2,7 @@ import datetime
 
 def get_time_of_day(unix_time):
     # Convert unix timestamp to datetime
-    dt = datetime.datetime.timestamp(unix_time)
+    dt = datetime.datetime.utcfromtimestamp(unix_time)
 
     # Extract the hour from the datetime object
     hour = dt.hour
