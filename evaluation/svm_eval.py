@@ -1,12 +1,18 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import OneClassSVM
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
+import os
 
 # Load the dataset
-df = pd.read_csv('subSmall_modified.csv')  # Adjust this path as needed
+df = pd.read_csv('evaluation/data/subClean.csv')  # Adjust this path as needed
+
+# Directory to store the models
+MODEL_DIR = 'models'
+if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR)
 
 # Features for the SVM model
 features = ['avg_word_length', 'function_word_ratio', 'punctuation_usage', 'pronoun_usage', 'lexical_diversity']
@@ -37,24 +43,55 @@ for user_id in df['username'].unique():
     feature_data = [extract_stylometric_features(text) for text in user_data]
     feature_df = pd.DataFrame(feature_data, columns=features)
     
+    # Mix in some data from other users as outliers (non-user data)
+    non_user_data = df[df['username'] != user_id]['title']  # Data from other users
+    non_user_feature_data = [extract_stylometric_features(text) for text in non_user_data]
+    
+    # Create a new DataFrame combining the user's data with non-user data (outliers)
+    feature_df['label'] = 1  # User's data is labeled as 1 (positive class)
+    non_user_df = pd.DataFrame(non_user_feature_data, columns=features)
+    non_user_df['label'] = -1  # Non-user data is labeled as -1 (negative class)
+    
+    # Combine user and non-user data
+    combined_df = pd.concat([feature_df, non_user_df], ignore_index=True)
+    
+    # Split the data into training and test sets (80/20 split)
+    X = combined_df[features]
+    y = combined_df['label']
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
     # Normalize the features
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(feature_df)
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
     
-    # Train the One-Class SVM
+    # Train the One-Class SVM on the training data (only use positive class)
     svm = OneClassSVM(kernel='rbf', gamma='auto', nu=0.1)
-    
-    # Perform cross-validation (5-fold)
-    scores = cross_val_score(svm, X_scaled, cv=5, scoring='accuracy')
-    print(f"Cross-validation accuracy for user {user_id}: {scores.mean()}")
-    
-    # Train final model on all user data
-    svm.fit(X_scaled)
+    svm.fit(X_train_scaled[y_train == 1])  # Only train on the user's data
     
     # Save the model and scaler
-    model_filename = f'models/{user_id}_svm_model.pkl'
-    scaler_filename = f'models/{user_id}_scaler.pkl'
+    model_filename = f'{MODEL_DIR}/{user_id}_svm_model.pkl'
+    scaler_filename = f'{MODEL_DIR}/{user_id}_scaler.pkl'
     joblib.dump(svm, model_filename)
     joblib.dump(scaler, scaler_filename)
 
     print(f"Model and scaler saved for user {user_id}.")
+    
+    # Evaluate the model on the test set
+    y_pred = svm.predict(X_test_scaled)
+    
+    # Replace the SVM's default output (-1 for outliers) to match the actual labels (-1 or 1)
+    y_pred = [1 if p == 1 else -1 for p in y_pred]  # Adjust prediction labels
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, pos_label=1, average='binary')
+    recall = recall_score(y_test, y_pred, pos_label=1, average='binary')
+    f1 = f1_score(y_test, y_pred, pos_label=1, average='binary')
+    
+    print(f"Evaluation for user {user_id}:")
+    print(f"Accuracy: {accuracy}")
+    print(f"Precision: {precision}")
+    print(f"Recall: {recall}")
+    print(f"F1 Score: {f1}")
+    print("--------------------------------------------------------")
