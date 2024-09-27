@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import cross_val_predict
 
 # Function to load SVM model and scaler for a user
 def load_model_and_scaler(user_id):
@@ -18,7 +16,7 @@ def load_model_and_scaler(user_id):
         st.error(f"Model not found for user {user_id}.")
         return None, None
 
-# Extract stylometric features from the user's prompt
+# Extract stylometric features from the user's prompt, including prompt length
 def extract_stylometric_features(text):
     words = text.split()
     unique_words = set(words)
@@ -34,10 +32,13 @@ def extract_stylometric_features(text):
     
     pronoun_usage = sum(1 for word in words if word.lower() in ['i', 'he', 'she', 'we', 'they']) / len(words) if words else 0
     
-    return [avg_word_length, function_word_ratio, punctuation_usage, pronoun_usage, lexical_diversity]
+    prompt_length = len(text)  # Added prompt length (in characters)
+    
+    # Returning all 6 features, including prompt_length
+    return [avg_word_length, function_word_ratio, punctuation_usage, pronoun_usage, lexical_diversity, prompt_length]
 
 # Streamlit app
-st.title('Stylometric User Authentication with SVM Evaluation')
+st.title('Stylometric User Authentication with Prompt Length Feature')
 
 # Input username and prompt
 username = st.text_input('Enter your username:')
@@ -51,53 +52,39 @@ if st.button('Authenticate'):
         if model and scaler:
             # Extract and normalize features
             features = extract_stylometric_features(prompt)
-            features_scaled = scaler.transform([features])
-            
-            # Predict using the SVM
-            prediction = model.predict(features_scaled)
-            decision_function_value = model.decision_function(features_scaled)[0]  # Decision score
-            
-            if prediction == 1:
-                st.success('User authenticated successfully!')
+            if len(features) != 6:  # Ensure that we have exactly 6 features
+                st.error(f"Expected 6 features but got {len(features)}.")
             else:
-                st.error('Authentication failed.')
+                features_scaled = scaler.transform([features])
+                
+                # Predict using the SVM
+                prediction = model.predict(features_scaled)
+                decision_function_value = model.decision_function(features_scaled)[0]  # Decision score
+                
+                if prediction == 1:
+                    st.success('User authenticated successfully!')
+                else:
+                    st.error('Authentication failed.')
 
-            # Display the actual feature values and the SVM decision function score
-            st.write("### Analyzing Feature Differences:")
-            
-            # Create a DataFrame to display the comparison
-            comparison_table = pd.DataFrame({
-                'Feature': ['Avg Word Length', 'Function Word Ratio', 'Punctuation Usage', 
-                            'Pronoun Usage', 'Lexical Diversity'],
-                'User Input (Raw)': features,
-                'SVM Decision Score': [decision_function_value] * len(features)
-            })
-            
-            st.write(comparison_table)
-            
-            # Provide additional explanation for why authentication failed or succeeded
-            if decision_function_value < 0:
-                st.warning("The negative decision score indicates the input features are outside the expected range.")
-            else:
-                st.success("The decision score indicates the input features are within the expected range.")
+                # Display the actual feature values and the SVM decision function score
+                st.write("### Analyzing Feature Differences:")
+                
+                # Create a DataFrame to display the comparison
+                comparison_table = pd.DataFrame({
+                    'Feature': ['Avg Word Length', 'Function Word Ratio', 'Punctuation Usage', 
+                                'Pronoun Usage', 'Lexical Diversity', 'Prompt Length'],
+                    'User Input (Raw)': features,
+                    'SVM Decision Score': [decision_function_value] * len(features)
+                })
+                
+                st.write(comparison_table)
+                
+                # Provide additional explanation for why authentication failed or succeeded
+                if decision_function_value < 0:
+                    st.warning("The negative decision score indicates the input features are outside the expected range.")
+                else:
+                    st.success("The decision score indicates the input features are within the expected range.")
 
-        # Test accuracy, precision, recall, F1 using cross-validation
-        user_data = pd.read_csv('data/subSmall.csv', on_bad_lines='skip')  
-        user_prompts = user_data[user_data['username'] == username]['text']
-        X_test = [extract_stylometric_features(text) for text in user_prompts]
-        X_test_scaled = scaler.transform(X_test)
-        
-        y_pred = cross_val_predict(model, X_test_scaled, cv=5)  # Cross-validation predictions
-
-        y_true = [1] * len(X_test_scaled)  # Assuming all data is from the actual user
-        
-        accuracy = accuracy_score(y_true, y_pred)
-        precision = precision_score(y_true, y_pred, pos_label=1)
-        recall = recall_score(y_true, y_pred, pos_label=1)
-        f1 = f1_score(y_true, y_pred, pos_label=1)
-
-        st.write(f"### Model Evaluation Metrics (Cross-Validation):")
-        st.write(f"- **Accuracy**: {accuracy}")
-        st.write(f"- **Precision**: {precision}")
-        st.write(f"- **Recall**: {recall}")
-        st.write(f"- **F1 Score**: {f1}")
+        # Show a warning if no username or prompt is provided
+        else:
+            st.warning("Please enter both a username and a prompt to authenticate.")
