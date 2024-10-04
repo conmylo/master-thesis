@@ -3,19 +3,28 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from sklearn.model_selection import KFold
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import nltk
+import string
+
+# Download necessary NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
 
 # Load dataset (Replace with your actual CSV file path)
 df = pd.read_csv('twitterDataset20/data/tweets.csv')
 
 # Define columns for analysis and feature extraction
 FEATURE_NAMES = ['avg_word_length', 'function_word_ratio', 'punctuation_usage', 
-                 'pronoun_usage', 'lexical_diversity', 'prompt_length', 
-                 'number_of_likes', 'number_of_shares']
+                 'pronoun_usage', 'lexical_diversity', 'prompt_length',
+                 'capitalization_ratio', 'stopword_ratio', 'special_char_ratio']
 
 # Function to extract stylometric features from tweet content
 def extract_stylometric_features(text):
-    words = text.split()
+    words = word_tokenize(text)
     unique_words = set(words)
+    characters = list(text)
 
     avg_word_length = sum(len(word) for word in words) / len(words) if words else 0
     lexical_diversity = len(unique_words) / len(words) if words else 0
@@ -26,15 +35,27 @@ def extract_stylometric_features(text):
     pronoun_usage = sum(1 for word in words if word.lower() in ['i', 'he', 'she', 'we', 'they']) / len(words) if words else 0
     prompt_length = len(text)
 
-    return [avg_word_length, function_word_ratio, punctuation_usage, pronoun_usage, lexical_diversity, prompt_length]
+    # Capitalization Ratio
+    capitalization_count = sum(1 for char in text if char.isupper())
+    capitalization_ratio = capitalization_count / len(characters) if characters else 0
+
+    # Stopword Ratio
+    stopwords_set = set(stopwords.words('english'))
+    stopword_ratio = sum(1 for word in words if word in stopwords_set) / len(words) if words else 0
+
+    # Special Character Ratio
+    special_char_ratio = sum(1 for char in characters if char in string.punctuation) / len(characters) if characters else 0
+
+    return [
+        avg_word_length, function_word_ratio, punctuation_usage, pronoun_usage, lexical_diversity, prompt_length,
+        capitalization_ratio, stopword_ratio, special_char_ratio
+    ]
 
 # Apply feature extraction to each tweet
 features = df['content'].apply(extract_stylometric_features)
-features_df = pd.DataFrame(features.tolist(), columns=FEATURE_NAMES[:6])
+features_df = pd.DataFrame(features.tolist(), columns=FEATURE_NAMES)
 
-# Add extra features like number_of_likes and number_of_shares
-features_df['number_of_likes'] = df['number_of_likes']
-features_df['number_of_shares'] = df['number_of_shares']
+# Add author column
 features_df['author'] = df['author']
 
 # Prepare the dataset for training and testing
@@ -70,7 +91,7 @@ for user_id in unique_users:
         impostor_decision_scores = svm.decision_function(impostor_data_scaled)
 
         # Adjust decision threshold dynamically
-        # Use a custom threshold, e.g., 10th percentile of genuine user's decision scores
+        # Use a custom threshold, e.g., 15th percentile of genuine user's decision scores
         decision_threshold = np.percentile(user_decision_scores, 15)
 
         # Classify based on adjusted threshold
