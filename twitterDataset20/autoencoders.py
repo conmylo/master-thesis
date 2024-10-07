@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import re
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
+from keras import Model, Input, Dense # comment this line before running
+# from tensorflow.keras.models import Model # uncomment this line before running
+# from tensorflow.keras.layers import Input, Dense # uncomment this line before running
 from sklearn.model_selection import KFold
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
