@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import re
 import tensorflow as tf
-from keras import Model, Input, Dense
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
 from sklearn.model_selection import KFold
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
