@@ -168,5 +168,25 @@ for result in results:
     print(f"nu={result['nu']}, gamma={result['gamma']}, FRR={result['FRR']:.4f}, FAR={result['FAR']:.4f}")
 
 # ------------------------------
-# Results from Grid Search
-# Testing combination: nu=0.01, gamma=scale
+# ------------------------------------------------
+# Summary of all hyperparameter combinations:
+# nu=0.01, gamma=scale, FRR=0.0148, FAR=0.0133
+# nu=0.01, gamma=0.001, FRR=0.0304, FAR=0.0193
+# nu=0.01, gamma=0.01, FRR=0.1745, FAR=0.0976
+# nu=0.01, gamma=0.1, FRR=0.7206, FAR=0.3873
+# nu=0.01, gamma=1, FRR=0.9578, FAR=0.4261
+# nu=0.05, gamma=scale, FRR=0.0521, FAR=0.0503
+# nu=0.05, gamma=0.001, FRR=0.0597, FAR=0.0529
+# nu=0.05, gamma=0.01, FRR=0.1755, FAR=0.0997
+# nu=0.05, gamma=0.1, FRR=0.7179, FAR=0.3727
+# nu=0.05, gamma=1, FRR=0.9614, FAR=0.4950
+# nu=0.1, gamma=scale, FRR=0.1015, FAR=0.1006
+# nu=0.1, gamma=0.001, FRR=0.1082, FAR=0.1018
+# nu=0.1, gamma=0.01, FRR=0.1934, FAR=0.1248
+# nu=0.1, gamma=0.1, FRR=0.7194, FAR=0.3715
+# nu=0.1, gamma=1, FRR=0.9592, FAR=0.4738
+# nu=0.2, gamma=scale, FRR=0.2001, FAR=0.1999
+# nu=0.2, gamma=0.001, FRR=0.2042, FAR=0.2005
+# nu=0.2, gamma=0.01, FRR=0.2618, FAR=0.2101
+# nu=0.2, gamma=0.1, FRR=0.7186, FAR=0.3724
+# nu=0.2, gamma=1, FRR=0.9635, FAR=0.5068
