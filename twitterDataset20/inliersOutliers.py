@@ -114,7 +114,11 @@ gamma = 'scale'
 for author in authors:
     author_data = X[df['author'] == author]  # Inliers: the current user's tweets
     other_authors_data = X[df['author'] != author]  # Outliers: tweets from all other users
-    
+
+    # Downsample outliers to balance test set size with inliers
+    if len(other_authors_data) > len(author_data):
+        other_authors_data = other_authors_data[np.random.choice(len(other_authors_data), len(author_data), replace=False)]
+
     false_rejection_count = 0
     false_acceptance_count = 0
     samples_tested = 0
@@ -122,7 +126,7 @@ for author in authors:
     for train_index, test_index in kf.split(author_data):
         # Training on only the current user's tweets (inliers)
         X_train = author_data[train_index]
-        # Testing on both the current user's tweets and tweets from other users (outliers)
+        # Testing on both the current user's tweets and downsampled outliers from other users
         X_test_inliers = author_data[test_index]  # Current user's tweets
         X_test_outliers = other_authors_data  # Other users' tweets
         
