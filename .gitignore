@@ -7,4 +7,5 @@ panData/data
 twitterDataset20/data
 trainAndTest/data
 trainAndTest/models
+authentication_system/src/__pycache__
 
