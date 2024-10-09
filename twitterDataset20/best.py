@@ -24,7 +24,7 @@ df = pd.read_csv(data_path)
 def preprocess_tweet(tweet):
     # Removing URLs, mentions, and special characters
     tweet = re.sub(r"http\S+|@\S+|[^A-Za-z0-9\s]", "", tweet)
-    # Lowercasing
+    # Lowercasing - will see if we include capitalization ratio
     tweet = tweet.lower()
     return tweet
 
