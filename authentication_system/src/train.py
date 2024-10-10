@@ -1,4 +1,3 @@
-
 import pandas as pd
 import re
 from sklearn.svm import OneClassSVM
@@ -6,13 +5,15 @@ import pickle
 import os
 import numpy as np
 import nltk
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
-from sklearn.model_selection import train_test_split
 
 # Preprocess data: Remove URLs
 def remove_urls(text):
-    return re.sub(r'http\S+', '', text)
+    return re.sub(r'http\\S+', '', text)
 
 # Load and preprocess dataset
 def preprocess_data(file_path):
@@ -47,28 +48,31 @@ def extract_features(text):
 
 # Train One-Class SVM model
 def train_model(X_train):
-    model = OneClassSVM(kernel='rbf', gamma='scale', nu=0.1)
-    model.fit(X_train)
-    return model
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    model = OneClassSVM(kernel='rbf', gamma='scale', nu=0.01)
+    model.fit(X_train_scaled)
+    return model, scaler
 
-# Save model
-def save_model(model, user_id, model_dir="models/"):
+# Save model and scaler
+def save_model_and_scaler(model, scaler, user_id, model_dir="models/"):
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
     with open(f"{model_dir}/user_{user_id}_model.pkl", 'wb') as f:
         pickle.dump(model, f)
+    with open(f"{model_dir}/user_{user_id}_scaler.pkl", 'wb') as f:
+        pickle.dump(scaler, f)
 
 # Main train function
 def main_train(file_path):
     df = preprocess_data(file_path)
-    users_features = {}
     for user, group in df.groupby('author'):
         features = [extract_features(text) for text in group['content']]
-        X_train, _, = train_test_split(features, test_size=0.2, random_state=42)
-        model = train_model(X_train)
-        save_model(model, user)
+        X_train, _ = train_test_split(features, test_size=0.2, random_state=42)
+        model, scaler = train_model(X_train)
+        save_model_and_scaler(model, scaler, user)
 
 # Run training
 if __name__ == '__main__':
-    data_path = 'data/cleaned.csv'  # Replace with your dataset path
+    data_path = 'data/cleaned.csv'  # Path to cleaned data
     main_train(data_path)
