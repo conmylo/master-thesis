@@ -7,9 +7,12 @@ import numpy as np
 import nltk
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from collections import Counter
+from nltk.corpus import stopwords
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
+nltk.download('stopwords')
 
 # Preprocess data: Remove URLs
 def remove_urls(text):
@@ -21,10 +24,33 @@ def preprocess_data(file_path):
     df['content'] = df['content'].apply(remove_urls)
     return df[['author', 'content', 'date_time', 'id']]
 
+# Extract additional features
+def type_token_ratio(words):
+    return len(set(words)) / len(words) if words else 0
+
+def character_ngrams(text, n=3):
+    return [text[i:i+n] for i in range(len(text) - n + 1)]
+
+def stop_word_frequency(words):
+    stop_words = set(stopwords.words('english'))
+    stop_word_count = sum(1 for word in words if word.lower() in stop_words)
+    return stop_word_count / len(words) if words else 0
+
+def word_length_distribution(words):
+    word_lengths = [len(word) for word in words]
+    avg_word_length = sum(word_lengths) / len(word_lengths) if word_lengths else 0
+    return avg_word_length
+
+def punctuation_patterns(text):
+    punctuations = Counter(c for c in text if c in '.,!?')
+    return punctuations['.'], punctuations[','], punctuations['!'], punctuations['?']
+
 # Extract features
 def extract_features(text):
     features = {}
     words = nltk.word_tokenize(text)
+    
+    # Existing Features
     features['avg_word_length'] = np.mean([len(word) for word in words])
     char_count = len(text)
     whitespace_count = text.count(' ')
@@ -32,25 +58,26 @@ def extract_features(text):
     features['upper_to_lower_ratio'] = sum(1 for c in text if c.isupper()) / (sum(1 for c in text if c.islower()) + 1)
     unique_words = set(words)
     features['vocabulary_richness'] = len(unique_words) / len(words) if words else 0
-    features['function_word_count'] = sum(1 for word in words if word.lower() in ['the', 'and', 'in', 'of']) / len(words)
     bigrams = nltk.bigrams(words)
     features['bigrams'] = len(list(bigrams))
     pos_tags = nltk.pos_tag(words)
     pos_counts = nltk.FreqDist(tag for (word, tag) in pos_tags)
     features['noun_ratio'] = pos_counts['NN'] / len(words) if words else 0
-    punctuation_count = sum(1 for c in text if c in '.,!?')
-    features['punctuation_ratio'] = punctuation_count / len(words) if words else 0
-    sentences = nltk.sent_tokenize(text)
-    features['sentence_length'] = np.mean([len(nltk.word_tokenize(sentence)) for sentence in sentences]) if sentences else 0
-    contraction_count = sum(1 for word in words if "'" in word)
-    features['contraction_usage'] = contraction_count / len(words) if words else 0
+
+    # New Features
+    features['type_token_ratio'] = type_token_ratio(words)
+    features['char_ngrams_3'] = len(character_ngrams(text, n=3))  # Number of 3-grams
+    features['stop_word_freq'] = stop_word_frequency(words)
+    features['word_length_avg'] = word_length_distribution(words)
+    features['period_count'], features['comma_count'], features['exclamation_count'], features['question_count'] = punctuation_patterns(text)
+
     return list(features.values())
 
 # Train One-Class SVM model
 def train_model(X_train):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    model = OneClassSVM(kernel='rbf', gamma='scale', nu=0.01)
+    model = OneClassSVM(kernel='rbf', gamma=0.1, nu=0.05)
     model.fit(X_train_scaled)
     return model, scaler
 
