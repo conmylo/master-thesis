@@ -84,15 +84,15 @@ def train_model(X_train):
 
     # Parameters for grid search
     param_grid = {
-        'nu': [0.001, 0.002, 0.005],
-        'gamma': [0.5, 0.8, 1.0]
+        'nu': [0.001, 0.002, 0.003, 0.004, 0.005],
+        'gamma': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     }
 
     # Define the One-Class SVM model
     model = OneClassSVM(kernel='rbf')
     
     # Grid search for best parameters
-    grid_search = GridSearchCV(model, param_grid, cv=3, scoring='f1_macro', n_jobs=-1)
+    grid_search = GridSearchCV(model, param_grid, cv=5, scoring='f1_macro', n_jobs=-1)
     grid_search.fit(X_train_scaled, np.ones(len(X_train_scaled)))  # One-Class SVM is trained on inliers (1s)
 
     # Return the best model and scaler
