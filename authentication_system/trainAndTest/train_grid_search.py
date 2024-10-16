@@ -24,31 +24,6 @@ def preprocess_data(file_path):
     df['content'] = df['content'].apply(remove_urls)
     return df[['author', 'content', 'date_time', 'id']]
 
-# Extract additional features as percentages
-def type_token_ratio(words):
-    return len(set(words)) / len(words) if words else 0
-
-def character_ngrams(text, n=3):
-    return [text[i:i+n] for i in range(len(text) - n + 1)]
-
-def stop_word_frequency(words):
-    stop_words = set(stopwords.words('english'))
-    stop_word_count = sum(1 for word in words if word.lower() in stop_words)
-    return stop_word_count / len(words) if words else 0
-
-def word_length_distribution(words):
-    word_lengths = [len(word) for word in words]
-    avg_word_length = sum(word_lengths) / len(word_lengths) if word_lengths else 0
-    return avg_word_length
-
-def punctuation_patterns(text):
-    punctuations = Counter(c for c in text if c in '.,!?')
-    char_count = len(text) if len(text) > 0 else 1  # Avoid division by zero
-    return (punctuations['.'] / char_count, 
-            punctuations[','] / char_count, 
-            punctuations['!'] / char_count, 
-            punctuations['?'] / char_count)
-
 # Extract features as proportions
 def extract_features(text):
     features = {}
@@ -68,35 +43,30 @@ def extract_features(text):
     pos_counts = nltk.FreqDist(tag for (word, tag) in pos_tags)
     features['noun_ratio'] = pos_counts['NN'] / len(words) if words else 0
 
-    # New Features (as proportions)
-    features['type_token_ratio'] = type_token_ratio(words)
-    features['char_ngrams_3_ratio'] = len(character_ngrams(text, n=3)) / char_count
-    features['stop_word_freq'] = stop_word_frequency(words)
-    features['word_length_avg'] = word_length_distribution(words)
-    features['period_ratio'], features['comma_ratio'], features['exclamation_ratio'], features['question_ratio'] = punctuation_patterns(text)
-
     return list(features.values())
 
-# Train One-Class SVM model with Grid Search
+# Train One-Class SVM model with Grid Search and Custom Logging
 def train_model(X_train):
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
 
-    # Parameters for grid search
+    # Extended parameter grid for better exploration
     param_grid = {
-        'nu': [0.001, 0.002, 0.003, 0.004, 0.005],
-        'gamma': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        'nu': [0.0001, 0.001, 0.005, 0.01, 0.05, 0.1],
+        'gamma': [0.05, 0.1, 0.2, 0.5, 1.0]
     }
 
     # Define the One-Class SVM model
     model = OneClassSVM(kernel='rbf')
     
     # Grid search for best parameters
-    grid_search = GridSearchCV(model, param_grid, cv=5, scoring='f1_macro', n_jobs=-1)
-    grid_search.fit(X_train_scaled, np.ones(len(X_train_scaled)))  # One-Class SVM is trained on inliers (1s)
-
-    # Return the best model and scaler
-    return grid_search.best_estimator_, scaler, grid_search.best_params_
+    grid_search = GridSearchCV(model, param_grid, cv=3, scoring='f1_macro', n_jobs=-1)
+    
+    # Fit the model with training data (One-Class SVM is trained only on inliers)
+    grid_search.fit(X_train_scaled, np.ones(len(X_train_scaled)))  # Use np.ones since it's all inliers
+    
+    # Return the best model, scaler, and best parameters
+    return grid_search.best_estimator_, scaler, grid_search.best_params_, grid_search.best_score_
 
 # Save model, scaler, and best parameters
 def save_model_and_scaler(model, scaler, user_id, best_params, model_dir="models/"):
@@ -109,13 +79,22 @@ def save_model_and_scaler(model, scaler, user_id, best_params, model_dir="models
     with open(f"{model_dir}/user_{user_id}_best_params.pkl", 'wb') as f:
         pickle.dump(best_params, f)
 
-# Main train function
+# Main train function with user, best parameters, and F1 score logging
 def main_train(file_path):
     df = preprocess_data(file_path)
     for user, group in df.groupby('author'):
         features = [extract_features(text) for text in group['content']]
         X_train, _ = train_test_split(features, test_size=0.2, random_state=42)
-        model, scaler, best_params = train_model(X_train)
+        
+        # Train the model and get the best parameters and F1 score
+        model, scaler, best_params, best_f1_score = train_model(X_train)
+        
+        # Print the results for the user
+        print(f"User: {user}")
+        print(f"Best Parameters: {best_params}")
+        print(f"Best F1 Score: {best_f1_score:.5f}\n")
+        
+        # Save the best model, scaler, and parameters for the user
         save_model_and_scaler(model, scaler, user, best_params)
 
 # Run training
