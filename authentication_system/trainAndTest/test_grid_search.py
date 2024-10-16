@@ -15,31 +15,6 @@ def preprocess_data(file_path):
     df = pd.read_csv(file_path)
     return df[['author', 'content', 'date_time', 'id']]
 
-# Extract additional features as proportions
-def type_token_ratio(words):
-    return len(set(words)) / len(words) if words else 0
-
-def character_ngrams(text, n=3):
-    return [text[i:i+n] for i in range(len(text) - n + 1)]
-
-def stop_word_frequency(words):
-    stop_words = set(stopwords.words('english'))
-    stop_word_count = sum(1 for word in words if word.lower() in stop_words)
-    return stop_word_count / len(words) if words else 0
-
-def word_length_distribution(words):
-    word_lengths = [len(word) for word in words]
-    avg_word_length = sum(word_lengths) / len(word_lengths) if word_lengths else 0
-    return avg_word_length
-
-def punctuation_patterns(text):
-    punctuations = Counter(c for c in text if c in '.,!?')
-    char_count = len(text) if len(text) > 0 else 1  # Avoid division by zero
-    return (punctuations['.'] / char_count, 
-            punctuations[','] / char_count, 
-            punctuations['!'] / char_count, 
-            punctuations['?'] / char_count)
-
 # Extract features as proportions
 def extract_features(text):
     features = {}
@@ -57,15 +32,7 @@ def extract_features(text):
     features['bigrams_ratio'] = len(list(bigrams)) / len(words) if words else 0
     pos_tags = nltk.pos_tag(words)
     pos_counts = nltk.FreqDist(tag for (word, tag) in pos_tags)
-    # POS tag-based feature
     features['noun_ratio'] = pos_counts['NN'] / len(words) if words else 0
-
-    # New Features (as proportions)
-    features['type_token_ratio'] = type_token_ratio(words)
-    features['char_ngrams_3_ratio'] = len(character_ngrams(text, n=3)) / char_count
-    features['stop_word_freq'] = stop_word_frequency(words)
-    features['word_length_avg'] = word_length_distribution(words)
-    features['period_ratio'], features['comma_ratio'], features['exclamation_ratio'], features['question_ratio'] = punctuation_patterns(text)
 
     return list(features.values())
 
@@ -79,11 +46,14 @@ def load_model_and_scaler(user_id, model_dir="models/"):
         best_params = pickle.load(f)
     return model, scaler, best_params
 
-# Evaluate model on test data
-def evaluate_model(model, scaler, X_test):
+# Evaluate model on test data with custom decision threshold
+def evaluate_model_with_threshold(model, scaler, X_test, threshold=-0.2):
     X_test_scaled = scaler.transform(X_test)
-    predictions = model.predict(X_test_scaled)
-    return predictions
+    decision_scores = model.decision_function(X_test_scaled)
+    
+    # Apply the custom threshold to decide inliers/outliers
+    y_pred = np.where(decision_scores >= threshold, 1, -1)  # Custom threshold
+    return y_pred
 
 # Calculate metrics including FAR and FRR
 def calculate_metrics(y_true, y_pred):
@@ -123,13 +93,12 @@ def main_test(file_path):
         y_true_inliers = np.ones(len(X_test_inliers))  # 1 for legitimate data (inliers)
         y_true_outliers = -1 * np.ones(len(X_test_outliers))  # -1 for outliers (other users)
 
-        # Predictions for inliers and outliers
-        y_pred_inliers = evaluate_model(model, scaler, X_test_inliers)  # Predict for inliers
-        y_pred_outliers = evaluate_model(model, scaler, X_test_outliers)  # Predict for outliers
-
         # Combine inliers and outliers for evaluation
+        X_test_combined = X_test_inliers + X_test_outliers
         y_true = np.concatenate([y_true_inliers, y_true_outliers])
-        y_pred = np.concatenate([y_pred_inliers, y_pred_outliers])
+
+        # Predictions with the decision threshold applied
+        y_pred = evaluate_model_with_threshold(model, scaler, X_test_combined, threshold=0.05)
 
         # Calculate precision, recall, F1, FAR, FRR
         precision, recall, f1, far, frr = calculate_metrics(y_true, y_pred)
