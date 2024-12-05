@@ -6,6 +6,10 @@ This project implements a Continuous Implicit Authentication System designed to 
 
 ---
 
+## Demo
+
+App is running live on: https://conmylothesis.streamlit.app/ 
+
 ## Repository Structure
 
 ```
