@@ -84,7 +84,7 @@ st.markdown(
     }
     </style>
     <div class="footer">
-        Developed by Konstantinos Mylonas in 2024 as a Master Thesis Project
+        Konstantinos Mylonas | 2024 | Master Thesis Project
     </div>
     """,
     unsafe_allow_html=True,
