@@ -5,6 +5,8 @@ import numpy as np
 from src.extract_features import extract_features
 from src.utils import load_model_and_scaler_with_distance
 
+nltk.download('punkt_tab')
+
 # config.py
 NUS = [0.001, 0.005, 0.01]
 GAMMAS = [0.05, 0.07, 0.1, 0.15, 0.2, 0.5]
