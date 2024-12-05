@@ -70,6 +70,28 @@ def authenticate(username, text, nus, gammas, model_dir=MODEL_DIR, confidence_th
 st.title("Continuous Implicit Authentication System")
 st.write("Select a username and enter a text prompt for authentication.")
 
+st.markdown(
+    """
+    <style>
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f1f1f1;
+        color: #000;
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+    }
+    </style>
+    <div class="footer">
+        Developed by Konstantinos Mylonas in 2024 as a Master Thesis Project
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 trained_users = [
     "justinbieber", "taylorswift13", "BarackObama", "YouTube", 
     "ladygaga", "TheEllenShow", "Twitter", "jtimberlake", 
