@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import nltk
 import numpy as np
 from src.extract_features import extract_features
 from src.utils import load_model_and_scaler_with_distance
