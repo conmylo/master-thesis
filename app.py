@@ -6,6 +6,7 @@ from src.extract_features import extract_features
 from src.utils import load_model_and_scaler_with_distance
 
 nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
 
 # config.py
 NUS = [0.001, 0.005, 0.01]
